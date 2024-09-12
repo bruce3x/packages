@@ -9,6 +9,7 @@ import android.content.ActivityNotFoundException;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.Browser;
@@ -44,8 +45,7 @@ final class UrlLauncher implements UrlLauncherApi {
    * Creates an instance that uses {@code intentResolver} to look up the handler for intents. This
    * is to allow injecting an alternate resolver for unit testing.
    */
-  @VisibleForTesting
-  UrlLauncher(@NonNull Context context, @NonNull IntentResolver intentResolver) {
+  @VisibleForTesting UrlLauncher(@NonNull Context context, @NonNull IntentResolver intentResolver) {
     this.applicationContext = context;
     this.intentResolver = intentResolver;
   }
@@ -89,6 +89,14 @@ final class UrlLauncher implements UrlLauncherApi {
             .setData(Uri.parse(url))
             .putExtra(Browser.EXTRA_HEADERS, extractBundle(headers));
     try {
+      ActivityInfo activityInfo = launchIntent.resolveActivityInfo(activity.getPackageManager(), 0);
+
+      boolean isOurApp =
+          activityInfo != null && activity.getPackageName().equals(activityInfo.packageName);
+      if (!isOurApp) {
+        launchIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+      }
+
       activity.startActivity(launchIntent);
     } catch (ActivityNotFoundException e) {
       return false;
