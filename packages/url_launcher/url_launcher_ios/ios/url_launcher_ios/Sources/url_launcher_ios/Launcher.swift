@@ -15,7 +15,7 @@ protocol Launcher {
   func open(
     _ url: URL,
     options: [UIApplication.OpenExternalURLOptionsKey: Any],
-    completionHandler completion: ((Bool) -> Void)?)
+    completionHandler completion: (@MainActor (Bool) -> Void)?)
 }
 
 // TODO(hellohuanlin): This wrapper is a workaround for iOS 18 Beta 3 where completionHandler is annotated with @MainActor @Sendable, resulting in compile error when conforming UIApplication to Launcher. We should try again in newer betas.
